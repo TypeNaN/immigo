@@ -63,8 +63,6 @@ func main() {
 	config.Db.CollUsers = os.Getenv("db_coll_users")
 	config.Db.CollImgs = os.Getenv("db_coll_images")
 
-	fmt.Println(config)
-
 	var dbClientOpts = options.Client().ApplyURI(config.Db.Uri).SetAuth(options.Credential{
 		AuthMechanism: "SCRAM-SHA-256",
 		AuthSource:    "admin",
@@ -72,13 +70,15 @@ func main() {
 		Password:      config.Db.Pass,
 	})
 
-	dbClient, _ = mongo.Connect(context.TODO(), dbClientOpts)
+	dbClient, e = mongo.Connect(context.TODO(), dbClientOpts)
+	X(e)
+
 	databases, _ := dbClient.ListDatabaseNames(context.TODO(), bson.M{})
 	fmt.Println(databases)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", simpleRes).Methods("GET")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServeTLS(":"+strconv.FormatUint(config.Port, 10), config.Cert, config.Key, router))
 }
 
 func W(w error) {
