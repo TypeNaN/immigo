@@ -28,7 +28,7 @@ type ConfigDB struct {
 }
 
 type Configure struct {
-	Port        uint64
+	Port        string
 	Key         string
 	Cert        string
 	Secret      []byte
@@ -51,10 +51,9 @@ func main() {
 	e := godotenv.Load(".env")
 	X(e)
 
-	port, _ := strconv.ParseUint(os.Getenv("port"), 10, 64)
 	exprire, _ := strconv.ParseUint(os.Getenv("token_expire"), 10, 64)
 
-	config.Port = port
+	config.Port = os.Getenv("port")
 	config.Key = os.Getenv("server_key")
 	config.Cert = os.Getenv("server_cert")
 	config.Secret = []byte(os.Getenv("server_secret"))
@@ -82,7 +81,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", simpleRes).Methods("GET")
 	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
-	log.Fatal(http.ListenAndServeTLS(":"+strconv.FormatUint(config.Port, 10), config.Cert, config.Key, router))
+	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
 }
 
 func W(w error) {
@@ -99,6 +98,7 @@ func E(e error) {
 
 func X(e error) {
 	if e != nil {
+		log.Printf("Critical")
 		panic(fmt.Sprintf("Critical error: %v", e))
 	}
 }
@@ -112,13 +112,31 @@ func userSignUp(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	var user Users
 	json.NewDecoder(request.Body).Decode(&user)
-	fmt.Println(user)
 
 	// ครวจสอบข้อมูลอย่างง่าย
 	// ยังต้องการ การตรวจสอบที่รัดกุมกว่านี้
 	if user.DisplayName == "" || user.UserName == "" || user.Email == "" || user.Password == "" {
+		log.Printf("Warnning userSignUp: Bad Request \n %v", user)
 		http.Error(response, "Status Bad Request", http.StatusBadRequest)
 		return
 	}
-	json.NewEncoder(response).Encode(user)
+
+	var doc Users
+	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollUsers)
+	e := collection.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&doc)
+	if e != nil {
+		if e == mongo.ErrNoDocuments {
+			log.Printf("userSignUp: User %s already register", user.Email)
+		}
+	}
+	if doc.Email == user.Email {
+		log.Printf("userSignUp: User %s already existst", user.Email)
+		response.Write([]byte(`{"message":"User already existst"}`))
+		return
+	}
+	result, _ := collection.InsertOne(context.TODO(), user)
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"insertedID": result.InsertedID,
+		"message":    "successfully",
+	})
 }
