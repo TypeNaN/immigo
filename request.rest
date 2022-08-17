@@ -1,2 +1,13 @@
 ###
 GET  https://localhost:8443/
+
+###
+POST  https://localhost:8443/api/user/signup
+Content-Type: application/json
+
+{
+  "DisplayName" : "Demo Man",
+	"UserName"    : "demo",
+	"Email"       : "demo@localhost",
+	"Password"    : "123456"
+}

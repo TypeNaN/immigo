@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,12 +36,14 @@ type Configure struct {
 	Db          ConfigDB
 }
 
-var config Configure
-
-func simpleRes(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
-	response.Write([]byte(`{"message":"Hello world"}`))
+type Users struct {
+	DisplayName string `json:"displayname" bson:"displayname"`
+	UserName    string `json:"username" bson:"username"`
+	Email       string `json:"email" bson:"email"`
+	Password    string `json:"password" bson:"password"`
 }
+
+var config Configure
 
 func main() {
 	fmt.Println("Hello world!")
@@ -78,6 +81,7 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", simpleRes).Methods("GET")
+	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
 	log.Fatal(http.ListenAndServeTLS(":"+strconv.FormatUint(config.Port, 10), config.Cert, config.Key, router))
 }
 
@@ -97,4 +101,24 @@ func X(e error) {
 	if e != nil {
 		panic(fmt.Sprintf("Critical error: %v", e))
 	}
+}
+
+func simpleRes(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	response.Write([]byte(`{"message":"Hello world"}`))
+}
+
+func userSignUp(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var user Users
+	json.NewDecoder(request.Body).Decode(&user)
+	fmt.Println(user)
+
+	// ครวจสอบข้อมูลอย่างง่าย
+	// ยังต้องการ การตรวจสอบที่รัดกุมกว่านี้
+	if user.DisplayName == "" || user.UserName == "" || user.Email == "" || user.Password == "" {
+		http.Error(response, "Status Bad Request", http.StatusBadRequest)
+		return
+	}
+	json.NewEncoder(response).Encode(user)
 }
