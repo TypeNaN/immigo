@@ -56,4 +56,6 @@ export default class {
     }
     return null
   }
+
+  remove_spacails = (data) => data.replace(/[\`~!@#$%^&*\(\)+=\[\]\{\};:\'\"\\|,.<>/?]/g, '')
 }
