@@ -14,6 +14,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var dbClient *mongo.Client
@@ -127,6 +128,8 @@ func userSignUp(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	user.Password = getHash([]byte(user.Password))
+
 	var doc Users
 	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollUsers)
 	e := collection.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&doc)
@@ -163,4 +166,10 @@ func userSignIn(response http.ResponseWriter, request *http.Request) {
 		}
 	}
 	response.Write([]byte(`{"message":"User SignIn"}`))
+}
+
+func getHash(password []byte) string {
+	hash, e := bcrypt.GenerateFromPassword(password, bcrypt.MinCost)
+	E(e)
+	return string(hash)
 }
