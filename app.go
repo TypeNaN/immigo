@@ -125,6 +125,7 @@ func main() {
 	router.HandleFunc("/api/image/all", imageAll).Methods("GET")
 	router.HandleFunc("/api/image/upload", imageUpload).Methods("POST")
 	router.HandleFunc("/api/image/edit", imageEdit).Methods("POST")
+	router.HandleFunc("/api/image/remove", imageRemove).Methods("POST")
 	spa := SPAhandler{staticPath: "public", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(spa)
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
@@ -487,6 +488,58 @@ func imageEdit(response http.ResponseWriter, request *http.Request) {
 	}
 	json.NewEncoder(response).Encode(map[string]interface{}{
 		"updateID": docID,
+		"refresh":  refrash,
+		"message":  "successfully",
+	})
+}
+
+func imageRemove(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	user, _ := getUserInfo(response, request)
+
+	var images = make(map[string]interface{})
+	json.NewDecoder(request.Body).Decode(&images)
+
+	id := fmt.Sprintf("%v", images["id"])
+	docID, e := primitive.ObjectIDFromHex(id)
+	E(e)
+	var doc FileImage
+	filter := bson.M{"_id": docID}
+	opts := options.FindOne()
+	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollImgs)
+	e = collection.FindOne(context.TODO(), filter, opts).Decode(&doc)
+	if e != nil {
+		log.Printf("Error: imageEdit: %v", e)
+		if e == mongo.ErrNoDocuments {
+			response.WriteHeader(http.StatusNotFound)
+			response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+			return
+		}
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+	}
+	log.Printf("LOG: user %s remove file %s", user.Email, doc.Path)
+
+	path := fmt.Sprintf("public/%v", doc.Path)
+	e = os.Remove(path)
+	E(e)
+
+	res, e := collection.DeleteOne(context.TODO(), filter)
+	if e != nil {
+		log.Printf("Error: imageEdit: %v", e)
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+	}
+
+	log.Printf("LOG: user %s deleted %v documents and remove file %s ", user.Email, res.DeletedCount, doc.Path)
+
+	exprire, token, _ := getRefreshToken(response, request)
+	refrash := map[string]interface{}{
+		"exprire": exprire,
+		"token":   token,
+	}
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"removeID": docID,
 		"refresh":  refrash,
 		"message":  "successfully",
 	})
