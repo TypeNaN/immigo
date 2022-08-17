@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -101,6 +103,7 @@ func main() {
 	router.HandleFunc("/", simpleRes).Methods("GET")
 	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
 	router.HandleFunc("/api/user/signin", userSignIn).Methods("POST")
+	router.HandleFunc("/api/user/verify", userVerify).Methods("GET")
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
 }
 
@@ -187,12 +190,13 @@ func userSignIn(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	exprire, jwtToken, e := GenerateJWT(user.Email)
+	exprire, jwtToken, e := generateJWT(user.Email)
 	if e != nil {
 		response.WriteHeader(http.StatusInternalServerError)
 		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
 		return
 	}
+
 	log.Printf("userSignIp: User %s Signed in", user.Email)
 	json.NewEncoder(response).Encode(map[string]interface{}{
 		"exprire": exprire,
@@ -206,14 +210,46 @@ func getHash(password []byte) string {
 	return string(hash)
 }
 
-func GenerateJWT(email string) (int64, string, error) {
+func generateJWT(email string) (int64, string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	exprire := &jwt.StandardClaims{ExpiresAt: time.Now().Add(time.Minute * time.Duration(config.TokenExpire)).Unix()}
 	token.Claims = &CustomClaims{exprire, "0", CustomerInfo{email, "human"}}
-	tokenString, err := token.SignedString(config.Secret)
-	if err != nil {
-		log.Println("Error in JWT token generation")
-		return 0, "", err
+	tokenString, e := token.SignedString(config.Secret)
+	if e != nil {
+		log.Println("GenerateJWT: Error in JWT token generation")
+		return 0, "", e
 	}
 	return exprire.ExpiresAt, tokenString, nil
+}
+
+func getVerifyToken(authorization string) (interface{}, error) {
+	if authorization == "" {
+		return &CustomerInfo{Email: "", Kind: ""}, errors.New("403 Forbidden")
+	}
+	tokenHead := strings.Split(authorization, "Bearer ")[1]
+	token, e := jwt.ParseWithClaims(tokenHead, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return config.Secret, nil
+	})
+	if e != nil {
+		return &CustomerInfo{Email: "", Kind: ""}, e
+	}
+	return token.Claims, nil
+}
+
+func userVerify(response http.ResponseWriter, request *http.Request) {
+	claims, err := getVerifyToken(request.Header.Get("Authorization"))
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
+		return
+	}
+	customs := claims.(*CustomClaims)
+	info := customs.Info
+	response.Write([]byte(`{
+		"verify":{
+			"Level":"` + customs.TokenLevel + `",
+			"Email":"` + info.Email + `",
+			"Kind":"` + info.Kind + `"
+		}
+	}`))
 }
