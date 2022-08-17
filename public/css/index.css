@@ -1,4 +1,5 @@
-* {box-sizing: border-box}
+* { box-sizing: border-box }
+
 body {
   margin: 0;
   padding: 0;
@@ -12,3 +13,119 @@ body {
   height: 100%;
   padding: 20px;
 }
+
+#signin-containner,
+#signup-containner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70%;
+  padding: 40px 20px;
+  transform: translate(-50%, -50%);
+  border-radius: 20px;
+  box-shadow: 0 20px 20px 0 rgb(0 0 0 / 20%)
+}
+
+#signin-description,
+#signup-description { margin: 20px auto; text-align: center; }
+
+.inputbox {
+  position: relative;
+  margin-top: 10px;
+  transition: 0.5s;
+}
+
+.inputbox input {
+  display: flex;
+  width: 100%;
+  padding: 5px 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: #888;
+  border: none;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid #c0c0c0;
+  background: rgba(255, 255, 255, 0.8);
+  outline: none;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.inputbox label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  transform: translate(-50%, -50%);
+  padding: 5px 0;
+  text-align: center;
+  font-size: 16px;
+  line-height: 24px;
+  color: #f00;
+  pointer-events: none;
+  transition: 0.5s;
+}
+
+.inputbox input:focus:invalid {
+  margin-left: 110px;
+  width: calc(100% - 110px);
+  background: #fff;
+  border: 1px solid #f00;
+  border-left: 5px solid #f00;
+  border-right: 5px solid #f00;
+}
+
+.inputbox input:focus:invalid~label {
+  top: 0;
+  left: 0;
+  width: 100px;
+  transform: translate(0, 0);
+  color: #fff;
+  background: #f00;
+  border: 1px solid #f00;
+}
+
+.inputbox input:valid,
+.inputbox input:focus:valid {
+  margin-left: 110px;
+  width: calc(100% - 110px);
+  border: 1px solid #03A9F4;
+  border-left: 5px solid #03A9F4;
+  border-right: 5px solid #03A9F4;
+}
+
+.inputbox input:valid~label,
+.inputbox input:focus:valid~label {
+  top: 0;
+  left: 0;
+  width: 100px;
+  transform: translate(0, 0);
+  line-height: 24px;
+  color: #fff;
+  background: #03A9F4;
+  border: 1px solid #03A9F4;
+}
+
+.btn {
+  width: 80px;
+  padding: 5px;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  box-shadow: 0 5px 5px 0 rgb(0 0 0 / 20%);
+}
+
+.btn.form {
+  position: relative;
+  top: 30px;
+  left: 50%;
+  min-height: 45px;
+}
+
+.btn.ok { background: #00C300; }
+.btn.cancel { background: #03A9F4; }
+.btn.form.one-one { margin: 40px 0 10px 0; transform: translate(-50%, -50%); }
+.btn.form.two-one { transform: translate(calc(-50% - 50px), 0); }
+.btn.form.two-two { transform: translate(calc(-50% - 30px), 0); }
