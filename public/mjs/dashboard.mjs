@@ -10,6 +10,9 @@ export default class extends abstractView {
   
   render = async () => {
     console.log('This is Dashboard')
+
+    this.checkAuthState()
+    
     const container = document.getElementById('main-container')
     container.textContent = 'Hello World!'
   }
