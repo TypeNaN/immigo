@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
@@ -68,6 +70,15 @@ type CustomClaims struct {
 type SPAhandler struct {
 	staticPath string
 	indexPath  string
+}
+
+type FileImage struct {
+	Path        string `json:"path" bson:"path"`
+	File        string `json:"file" bson:"file"`
+	Name        string `json:"name" bson:"name"`
+	Description string `json:"description" bson:"description"`
+	Owner       string `json:"owner" bson:"owner"`
+	User        string `json:"user" bson:"user"`
 }
 
 var config Configure
@@ -305,7 +316,106 @@ func userRefresh(response http.ResponseWriter, request *http.Request) {
 	response.Write([]byte(`{"exprire":` + exprire + `, "token":"` + token + `"}`))
 }
 
+func getUserInfo(response http.ResponseWriter, request *http.Request) (Users, error) {
+	var user Users
+	claims, e := getVerifyToken(request.Header.Get("Authorization"))
+	if e != nil {
+		response.WriteHeader(http.StatusForbidden)
+		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+		return user, e
+	}
+	customs := claims.(*CustomClaims)
+	info := customs.Info
+	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollUsers)
+	e = collection.FindOne(context.TODO(), bson.M{"email": info.Email}).Decode(&user)
+	if e != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+		return user, e
+	}
+	return user, e
+}
+
 func imageUpload(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
-	response.Write([]byte(`{"message":"test"}`))
+	user, _ := getUserInfo(response, request)
+
+	request.ParseMultipartForm(10 << 20)
+
+	prefix := request.FormValue("name")
+	if utf8.RuneCountInString(prefix) < 1 {
+		fmt.Println("Error Retrieving the Name")
+		return
+	}
+
+	description := request.FormValue("description")
+	if utf8.RuneCountInString(prefix) < 1 {
+		fmt.Println("Error Retrieving the Description")
+		return
+	}
+
+	m := request.MultipartForm
+	files := m.File["myFile[]"]
+
+	var complete = make(map[string]interface{})
+	for i, file := range files {
+		reader, e := file.Open()
+		if e != nil {
+			http.Error(response, e.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer reader.Close()
+		path := "public/upload-images/" + user.UserName
+		_, e = os.Stat(path)
+		if os.IsNotExist(e) {
+			e = os.MkdirAll(path, 0660|os.ModePerm)
+			E(e)
+		}
+		tempFile, e := ioutil.TempFile(path, prefix+"-*.png")
+		E(e)
+		defer tempFile.Close()
+		fileInfo, e := tempFile.Stat()
+		E(e)
+		fileBytes, e := ioutil.ReadAll(reader)
+		E(e)
+		tempFile.Write(fileBytes)
+
+		var doc FileImage
+		var image FileImage
+		image.Path = strings.Replace(tempFile.Name(), "public/", "", -1)
+		image.File = fileInfo.Name()
+		image.Name = prefix
+		image.Description = description
+		image.Owner = user.Email
+		image.User = user.UserName
+
+		collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollImgs)
+		e = collection.FindOne(context.TODO(), bson.M{"owner": user.Email, "path": image.Path}).Decode(&doc)
+		if e != nil {
+			if e != mongo.ErrNoDocuments {
+				log.Printf("Error: imageUpload: %v", e)
+				response.WriteHeader(http.StatusInternalServerError)
+				response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+				return
+			}
+		}
+		if doc.Owner != "" {
+			response.WriteHeader(http.StatusNotModified)
+			response.Write([]byte(`{"message":"Duplicated"}`))
+			return
+		}
+		result, _ := collection.InsertOne(context.TODO(), image)
+		complete[fmt.Sprint(i)] = result
+		log.Printf("LOG: user %s upload file %s", user.Email, image.Path)
+	}
+	exprire, token, _ := getRefreshToken(response, request)
+	refrash := map[string]interface{}{
+		"exprire": exprire,
+		"token":   token,
+	}
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"insertedID": complete,
+		"refresh":    refrash,
+		"message":    "successfully",
+	})
 }
