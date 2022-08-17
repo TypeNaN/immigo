@@ -11,3 +11,12 @@ Content-Type: application/json
 	"Email"       : "demo@localhost",
 	"Password"    : "123456"
 }
+
+###
+POST  https://localhost:8443/api/user/signin
+Content-Type: application/json
+
+{
+	"Email"       : "demo@localhost",
+	"Password"    : "123456"
+}

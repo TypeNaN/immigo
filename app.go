@@ -43,6 +43,11 @@ type Users struct {
 	Password    string `json:"password" bson:"password"`
 }
 
+type UserSign struct {
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"password" bson:"password"`
+}
+
 var config Configure
 
 func main() {
@@ -81,6 +86,7 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", simpleRes).Methods("GET")
 	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
+	router.HandleFunc("/api/user/signin", userSignIn).Methods("POST")
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
 }
 
@@ -139,4 +145,22 @@ func userSignUp(response http.ResponseWriter, request *http.Request) {
 		"insertedID": result.InsertedID,
 		"message":    "successfully",
 	})
+}
+
+func userSignIn(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	var user UserSign
+	json.NewDecoder(request.Body).Decode(&user)
+	fmt.Println(user)
+	var doc Users
+	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollUsers)
+	e := collection.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&doc)
+	if e != nil {
+		if e == mongo.ErrNoDocuments {
+			log.Printf("userSignIp: User %s not found", user.Email)
+			response.Write([]byte(`{"message":"User not found"}`))
+			return
+		}
+	}
+	response.Write([]byte(`{"message":"User SignIn"}`))
 }
