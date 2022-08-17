@@ -19,6 +19,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
@@ -123,6 +124,7 @@ func main() {
 	router.HandleFunc("/api/user/refresh", userRefresh).Methods("GET")
 	router.HandleFunc("/api/image/all", imageAll).Methods("GET")
 	router.HandleFunc("/api/image/upload", imageUpload).Methods("POST")
+	router.HandleFunc("/api/image/edit", imageEdit).Methods("POST")
 	spa := SPAhandler{staticPath: "public", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(spa)
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
@@ -449,4 +451,43 @@ func imageAll(response http.ResponseWriter, request *http.Request) {
 		images[id] = image
 	}
 	json.NewEncoder(response).Encode(images)
+}
+
+func imageEdit(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	user, _ := getUserInfo(response, request)
+
+	var images = make(map[string]interface{})
+	json.NewDecoder(request.Body).Decode(&images)
+
+	id := fmt.Sprintf("%v", images["id"])
+	docID, e := primitive.ObjectIDFromHex(id)
+	E(e)
+	var doc FileImage
+	filter := bson.M{"_id": docID}
+	update := bson.M{"$set": bson.M{"name": images["name"], "description": images["description"]}}
+	opts := options.FindOneAndUpdate().SetUpsert(true)
+	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollImgs)
+	e = collection.FindOneAndUpdate(context.TODO(), filter, update, opts).Decode(&doc)
+	if e != nil {
+		log.Printf("Error: imageEdit: %v", e)
+		if e == mongo.ErrNoDocuments {
+			response.WriteHeader(http.StatusNotFound)
+			response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+			return
+		}
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+	}
+	log.Printf("LOG: user %s edit file %s", user.Email, doc.Path)
+	exprire, token, _ := getRefreshToken(response, request)
+	refrash := map[string]interface{}{
+		"exprire": exprire,
+		"token":   token,
+	}
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"updateID": docID,
+		"refresh":  refrash,
+		"message":  "successfully",
+	})
 }

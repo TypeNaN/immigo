@@ -42,3 +42,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3NjgxM
 {
 	"test" : "dummy"
 }
+
+###
+POST  https://localhost:8443/api/image/edit
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3Nzc0NDgsIlRva2VuTGV2ZWwiOiIwIiwiSW5mbyI6eyJFbWFpbCI6ImRlbW9AbG9jYWxob3N0IiwiS2luZCI6Imh1bWFuIn19.EAF-4vB0KEJHsnCRB0z0PSHAMuLieElEHRHy6UNvyoU
+
+{
+	"id" : "62fd6479172fed0733c79649",
+  "name": "test",
+  "description": "test"
+}
