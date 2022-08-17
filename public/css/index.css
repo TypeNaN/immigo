@@ -173,3 +173,78 @@ a:hover { color: #69DEFF; }
   border-radius: 5px;
   box-shadow: 0 20px 20px 0 rgb(0 0 0 / 20%)
 }
+
+#preview-upload-images {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.preview-upload-images {
+  display: inline-block;
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin: 5px 10px;
+  border: 3px solid #03A9F4;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.delete-upload-image {
+  position: absolute;
+  cursor: pointer;
+  width: 25px;
+  height: 25px;
+  top: 2px;
+  right: 2px;
+  color: #fff;
+  line-height: 25px;
+  background-color: #f00;
+  border-radius: 10px;
+  text-align: center;
+}
+
+#imageholder {
+  width: 100%;
+  height: 60px;
+  margin: 10px auto;
+  border: 1px dashed #03A9F4;
+  background-image: url("../assets/addnew.png");
+  background-size: 40px 40px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#imageholder.ondragover {
+  border: 10px dashed #63c9Ff;
+}
+
+#imageholder.ondrop {
+  border: 1px dashed #03A9F4;
+}
+
+#imageholder.ondragend {
+  border: 1px dashed #f00;
+}
+
+#imageholder.ondragleave {
+  border: 1px dashed #03A9F4;
+}
+
+#selectfile {
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#resmsg {
+  margin-top: 40px;
+  width: 100%;
+  height: 40%;
+  color: #666;
+}
+
+#resmsg.sending { color: #666; }
+#resmsg.success { color: #63c9Ff; }
+#resmsg.error { color: #f00; }
