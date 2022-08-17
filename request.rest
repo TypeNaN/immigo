@@ -28,3 +28,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3NDI3M
 ###
 GET  https://localhost:8443/api/user/refresh
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3NDI3MjAsIlRva2VuTGV2ZWwiOiIwIiwiSW5mbyI6eyJFbWFpbCI6ImRlbW9AbG9jYWxob3N0IiwiS2luZCI6Imh1bWFuIn19.igBu4c0bflLTASMIwrhoKyDyvLLqvUvFuO1VelbcQO4
+
+
+###
+POST  https://localhost:8443/api/image/upload
+Content-Type: application/json
+
+{
+	"test" : "dummy"
+}
