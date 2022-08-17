@@ -165,6 +165,16 @@ func userSignIn(response http.ResponseWriter, request *http.Request) {
 			return
 		}
 	}
+
+	Upass := []byte(user.Password)
+	Dpass := []byte(doc.Password)
+	e = bcrypt.CompareHashAndPassword(Dpass, Upass)
+	if e != nil {
+		log.Printf("userSignIp: Wrong password!, User %s", user.Email)
+		response.Write([]byte(`{"message":"Wrong Password!"}`))
+		return
+	}
+
 	response.Write([]byte(`{"message":"User SignIn"}`))
 }
 
