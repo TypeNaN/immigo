@@ -65,6 +65,8 @@ export default class extends abstractView {
         return target.onclick = signin
       }).catch((e) => {
         console.error(e)
+        resmsg.className = 'error'
+        resmsg.innerHTML = 'ดูเหมือนทาง server จะเกิดปัญหา<br>โปรดลองใหม่ในภายหลัง'
         return target.onclick = signin
       })
     }

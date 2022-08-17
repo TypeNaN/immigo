@@ -2,6 +2,7 @@
 
 import dashboard from './dashboard.mjs'
 import signin from './signin.mjs'
+import signup from './signup.mjs'
 
 const pathToRegex = (path) => new RegExp(`^${path.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/:(\w+)/g, '(?<$1>[^/]+)')}\/?$`)
 
@@ -25,6 +26,7 @@ const router = () => {
     { path: '/', view: dashboard },
     { path: '/dashboard', view: dashboard },
     { path: '/signin', view: signin },
+    { path: '/signup', view: signup },
   ]
   const potentialMatches = routes.map((route) => ({ route: route, result: window.location.pathname.match(pathToRegex(route.path)) }))
   let match = potentialMatches.find((potentialMatch) => potentialMatch.result !== null)
