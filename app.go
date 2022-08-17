@@ -104,6 +104,7 @@ func main() {
 	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
 	router.HandleFunc("/api/user/signin", userSignIn).Methods("POST")
 	router.HandleFunc("/api/user/verify", userVerify).Methods("GET")
+	router.HandleFunc("/api/user/refresh", userRefresh).Methods("GET")
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
 }
 
@@ -252,4 +253,28 @@ func userVerify(response http.ResponseWriter, request *http.Request) {
 			"Kind":"` + info.Kind + `"
 		}
 	}`))
+}
+
+func getRefreshToken(response http.ResponseWriter, request *http.Request) (int64, string, error) {
+	claims, err := getVerifyToken(request.Header.Get("Authorization"))
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
+		return 0, "", err
+	}
+	customs := claims.(*CustomClaims)
+	info := customs.Info
+	exprire, jwtToken, err := generateJWT(info.Email)
+	if err != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
+		return exprire, jwtToken, err
+	}
+	return exprire, jwtToken, nil
+}
+
+func userRefresh(response http.ResponseWriter, request *http.Request) {
+	ex, token, _ := getRefreshToken(response, request)
+	exprire := fmt.Sprintf("%v", ex)
+	response.Write([]byte(`{"exprire":` + exprire + `, "token":"` + token + `"}`))
 }
