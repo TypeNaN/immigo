@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -64,6 +65,11 @@ type CustomClaims struct {
 	Info       CustomerInfo
 }
 
+type SPAhandler struct {
+	staticPath string
+	indexPath  string
+}
+
 var config Configure
 
 func main() {
@@ -100,11 +106,12 @@ func main() {
 	fmt.Println(databases)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/", simpleRes).Methods("GET")
 	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
 	router.HandleFunc("/api/user/signin", userSignIn).Methods("POST")
 	router.HandleFunc("/api/user/verify", userVerify).Methods("GET")
 	router.HandleFunc("/api/user/refresh", userRefresh).Methods("GET")
+	spa := SPAhandler{staticPath: "public", indexPath: "index.html"}
+	router.PathPrefix("/").Handler(spa)
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
 }
 
@@ -125,11 +132,6 @@ func X(e error) {
 		log.Printf("Critical")
 		panic(fmt.Sprintf("Critical error: %v", e))
 	}
-}
-
-func simpleRes(response http.ResponseWriter, request *http.Request) {
-	response.Header().Set("Content-Type", "application/json")
-	response.Write([]byte(`{"message":"Hello world"}`))
 }
 
 func userSignUp(response http.ResponseWriter, request *http.Request) {
@@ -277,4 +279,25 @@ func userRefresh(response http.ResponseWriter, request *http.Request) {
 	ex, token, _ := getRefreshToken(response, request)
 	exprire := fmt.Sprintf("%v", ex)
 	response.Write([]byte(`{"exprire":` + exprire + `, "token":"` + token + `"}`))
+}
+
+func (h SPAhandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	path, err := filepath.Abs(request.URL.Path)
+	if err != nil {
+		http.Error(response, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	path = filepath.Join(h.staticPath, path)
+
+	_, err = os.Stat(path)
+	if os.IsNotExist(err) {
+		http.ServeFile(response, request, filepath.Join(h.staticPath, h.indexPath))
+		return
+	} else if err != nil {
+		http.Error(response, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.FileServer(http.Dir(h.staticPath)).ServeHTTP(response, request)
 }
