@@ -29,6 +29,11 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3NDI3M
 GET  https://localhost:8443/api/user/refresh
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3NDI3MjAsIlRva2VuTGV2ZWwiOiIwIiwiSW5mbyI6eyJFbWFpbCI6ImRlbW9AbG9jYWxob3N0IiwiS2luZCI6Imh1bWFuIn19.igBu4c0bflLTASMIwrhoKyDyvLLqvUvFuO1VelbcQO4
 
+###
+GET  https://localhost:8443/api/image/all
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2NjA3NzUwMzQsIlRva2VuTGV2ZWwiOiIwIiwiSW5mbyI6eyJFbWFpbCI6ImRlbW9AbG9jYWxob3N0IiwiS2luZCI6Imh1bWFuIn19.sZ1ucrwjFJ65b-aSSrp7KKzTcenjz4iAGQXTVJiGTCI
+
+
 
 ###
 POST  https://localhost:8443/api/image/upload

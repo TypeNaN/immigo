@@ -121,6 +121,7 @@ func main() {
 	router.HandleFunc("/api/user/signin", userSignIn).Methods("POST")
 	router.HandleFunc("/api/user/verify", userVerify).Methods("GET")
 	router.HandleFunc("/api/user/refresh", userRefresh).Methods("GET")
+	router.HandleFunc("/api/image/all", imageAll).Methods("GET")
 	router.HandleFunc("/api/image/upload", imageUpload).Methods("POST")
 	spa := SPAhandler{staticPath: "public", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(spa)
@@ -418,4 +419,34 @@ func imageUpload(response http.ResponseWriter, request *http.Request) {
 		"refresh":    refrash,
 		"message":    "successfully",
 	})
+}
+
+func imageAll(response http.ResponseWriter, request *http.Request) {
+	response.Header().Set("Content-Type", "application/json")
+	user, _ := getUserInfo(response, request)
+
+	var results []bson.M
+	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollImgs)
+	cursor, e := collection.Find(context.TODO(), bson.M{"owner": user.Email})
+	E(e)
+	e = cursor.All(context.TODO(), &results)
+	E(e)
+
+	var image bson.M
+	var images = make(map[string]interface{})
+
+	for _, result := range results {
+		image = bson.M{
+			"id":          result["_id"],
+			"name":        result["name"],
+			"description": result["description"],
+			"path":        result["path"],
+		}
+		id := fmt.Sprintf("%v", result["_id"])
+		id = strings.Replace(id, `ObjectID("`, "", -1)
+		id = strings.Replace(id, `")`, "", -1)
+
+		images[id] = image
+	}
+	json.NewEncoder(response).Encode(images)
 }
