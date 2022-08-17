@@ -248,3 +248,11 @@ a:hover { color: #69DEFF; }
 #resmsg.sending { color: #666; }
 #resmsg.success { color: #63c9Ff; }
 #resmsg.error { color: #f00; }
+
+.im {
+  width: 140px;
+  height: 140px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
