@@ -40,7 +40,7 @@ export default class extends abstractView {
       const data = JSON.parse(await res.text())
       return data
     }).then((data) => {
-      new imageAll(preview, data)
-    })
+      new imageAll(this, preview, data)
+    }).catch((e) => console.error(e))
   }
 }

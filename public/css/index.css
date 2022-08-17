@@ -249,10 +249,75 @@ a:hover { color: #69DEFF; }
 #resmsg.success { color: #63c9Ff; }
 #resmsg.error { color: #f00; }
 
-.im {
+#main-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+#main-preview .imcontainer {
+  width: 160px;
+  height: 300px;
+  margin: 20px 0;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 20px 20px 0 rgb(0 0 0 / 20%);
+  overflow: hidden;
+  transition: color 1000ms ease-in-out 50ms,
+    background-color 1000ms ease-in-out 50ms,
+    width 1000ms ease-in-out 50ms,
+    height 1000ms ease-in-out 50ms;
+}
+
+#main-preview .imcontainer.remove {
+  width: 0;
+  height: 0;
+  color: #fff;
+  background-color: #fff;
+  overflow: hidden;
+  transition: color 1000ms ease-in-out 50ms,
+    background-color 1000ms ease-in-out 50ms,
+    width 1000ms ease-in-out 50ms,
+    height 1000ms ease-in-out 50ms;
+}
+
+#main-preview .imbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 160px;
+  height: 160px;
+}
+
+#main-preview .im {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 140px;
   height: 140px;
+  border-radius: 10px 0 10px 0;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
+}
+
+#main-preview .imdetail {
+  width: 160px;
+  height: calc(100% - 160px);
+  padding: 20px 5px;
+  text-align: center;
+}
+
+#main-preview .imname,
+#main-preview .imddesc {
+  background-color: #ddd;
+  border: none;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid #c0c0c0;
+  border-radius: 10px;
+  line-height: 32px;
 }
