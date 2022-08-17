@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
@@ -47,6 +49,17 @@ type Users struct {
 type UserSign struct {
 	Email    string `json:"email" bson:"email"`
 	Password string `json:"password" bson:"password"`
+}
+
+type CustomerInfo struct {
+	Email string
+	Kind  string
+}
+
+type CustomClaims struct {
+	*jwt.StandardClaims
+	TokenLevel string
+	Info       CustomerInfo
 }
 
 var config Configure
@@ -154,7 +167,6 @@ func userSignIn(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	var user UserSign
 	json.NewDecoder(request.Body).Decode(&user)
-	fmt.Println(user)
 	var doc Users
 	collection := dbClient.Database(config.Db.Db).Collection(config.Db.CollUsers)
 	e := collection.FindOne(context.TODO(), bson.M{"email": user.Email}).Decode(&doc)
@@ -175,11 +187,33 @@ func userSignIn(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	response.Write([]byte(`{"message":"User SignIn"}`))
+	exprire, jwtToken, e := GenerateJWT(user.Email)
+	if e != nil {
+		response.WriteHeader(http.StatusInternalServerError)
+		response.Write([]byte(`{"message":"` + e.Error() + `"}`))
+		return
+	}
+	log.Printf("userSignIp: User %s Signed in", user.Email)
+	json.NewEncoder(response).Encode(map[string]interface{}{
+		"exprire": exprire,
+		"token":   jwtToken,
+	})
 }
 
 func getHash(password []byte) string {
 	hash, e := bcrypt.GenerateFromPassword(password, bcrypt.MinCost)
 	E(e)
 	return string(hash)
+}
+
+func GenerateJWT(email string) (int64, string, error) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	exprire := &jwt.StandardClaims{ExpiresAt: time.Now().Add(time.Minute * time.Duration(config.TokenExpire)).Unix()}
+	token.Claims = &CustomClaims{exprire, "0", CustomerInfo{email, "human"}}
+	tokenString, err := token.SignedString(config.Secret)
+	if err != nil {
+		log.Println("Error in JWT token generation")
+		return 0, "", err
+	}
+	return exprire.ExpiresAt, tokenString, nil
 }
