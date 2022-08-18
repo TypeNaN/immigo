@@ -42,7 +42,6 @@ export default class extends abstractView {
         <input type="button" id="cancel" class="btn form cancel two-two" value="cancel" />
         <center id="resmsg">&nbsp;</center>
       </form>
-
     `
     
     const container = document.getElementById('main-container')
@@ -74,12 +73,17 @@ export default class extends abstractView {
     }
     const submit = document.getElementById('submit')
     const cancel = document.getElementById('cancel')
-    cancel.onclick = () => {
+
+    const clear = (e) => {
       this.imgData.uploads.clearData()
       this.imgData.previews = []
       document.getElementById('name').value = ''
       document.getElementById('description').value = ''
       document.getElementById('preview-upload-images').textContent = ''
+    }
+      
+    cancel.onclick = (e) => {
+      clear()
       window.location.href = '/'
     }
 
@@ -116,6 +120,7 @@ export default class extends abstractView {
         if (res.status == 200) {
           resmsg.className = 'success'
           resmsg.textContent = 'บันทึกไฟล์เสร็จสิ้น'
+          clear()
           if (data['refresh'] && data['refresh']['token']) return this.setUserAuth(data.refresh)
         }
         resmsg.className = 'error'

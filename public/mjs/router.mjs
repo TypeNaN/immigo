@@ -4,7 +4,7 @@ import dashboard from './dashboard.mjs'
 import signin from './signin.mjs'
 import signup from './signup.mjs'
 import signout from './signout.mjs'
-import upimgs from './upimgs.mjs'
+import upimgs from './imageUpload.mjs'
 import page404 from './404.mjs'
 
 const pathToRegex = (path) => new RegExp(`^${path.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/:(\w+)/g, '(?<$1>[^/]+)')}\/?$`)
@@ -31,7 +31,6 @@ const router = () => {
     { path: '/signin', view: signin },
     { path: '/signup', view: signup },
     { path: '/signout', view: signout },
-    { path: '/upimgs', view: upimgs },
     { path: '/upimgs', view: upimgs },
     { path: '/:another', view: page404 }
   ]
