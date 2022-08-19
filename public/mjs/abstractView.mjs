@@ -29,16 +29,16 @@ export default class {
 
   getRefreshToken = async (token) => {
     if (token) {
-      await fetch('/api/user/refresh', {
+      return await fetch('/api/user/refresh', {
         method: 'GET',
         headers: { 'Authorization': 'Bearer ' + token }
       }).then(async (res) => {
         const data = JSON.parse(await res.text())
-        if (res.status == 200) {
-          if (data.token) return this.setUserAuth(data)
-        }
+        if (res.status == 200) if (data['token']) this.setUserAuth(data)
+        return
       }).catch((e) => console.error(e))
     }
+    return
   }
 
   checkAuthVerify = async (token) => {
@@ -54,7 +54,7 @@ export default class {
         }
       }).catch((e) => console.error(e))
     }
-    return null
+    return
   }
 
   remove_spacails = (data) => data.replace(/[\`~!@#$%^&*\(\)+=\[\]\{\};:\'\"\\|,.<>/?]/g, '')
