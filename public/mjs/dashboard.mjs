@@ -30,14 +30,16 @@ export default class extends abstractView {
     body.appendChild(preview)
     container.appendChild(body)
 
-    fetch('/api/image/all', {
-      method: 'GET',
-      headers: { 'Authorization': 'Bearer ' + this.user.token },
-    }).then(async (res) => {
-      const data = JSON.parse(await res.text())
-      return data
-    }).then((data) => {
-      new imageAll(this, preview, data)
-    }).catch((e) => console.error(e))
+    if (this.user.token) {
+      fetch('/api/image/all', {
+        method: 'GET',
+        headers: { 'Authorization': 'Bearer ' + this.user.token },
+      }).then(async (res) => {
+        const data = JSON.parse(await res.text())
+        return data
+      }).then((data) => {
+        new imageAll(this, preview, data)
+      }).catch((e) => console.error(e))
+    }
   }
 }
