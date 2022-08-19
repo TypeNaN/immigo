@@ -1,5 +1,6 @@
 'use strict'
 
+import router from './router.mjs'
 import abstractView from './abstractView.mjs'
 
 export default class extends abstractView {
@@ -16,6 +17,9 @@ export default class extends abstractView {
       token: null
     }
     sessionStorage.removeItem('userAuth')
-    window.location.href = '/'
+
+    router('/signin')
+
+    // ต้องส่ง request ไปบอก server ให้รู้ว่า signout ด้วย
   }
 }

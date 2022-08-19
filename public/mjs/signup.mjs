@@ -1,5 +1,6 @@
 'use strict'
 
+import router from './router.mjs'
 import abstractView from './abstractView.mjs'
 
 export default class extends abstractView {
@@ -8,7 +9,7 @@ export default class extends abstractView {
     this.setTitle('Signup')
   }
 
-  render = () => {
+  render = async () => {
     const html = `
       <div id="signup-containner">
         <div id="signup-description">โปรดกรอกข้อมูลเพื่อสมัครสมาชิก</div>
@@ -71,7 +72,7 @@ export default class extends abstractView {
           if (data.message == 'successfully') {
             resmsg.className = 'success'
             resmsg.textContent = 'เข้าสู่การลงชื่อเข้าใช้งาน'
-            return window.location.href = '/signin'
+            router('/signin')
           }
         }
         resmsg.className = 'error'

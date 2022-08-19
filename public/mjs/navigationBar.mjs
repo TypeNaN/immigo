@@ -1,20 +1,22 @@
 'use strict'
 
+import router from './router.mjs'
+
 export default class {
-  constructor() {
+  constructor(container) {
     this.root = document.createElement('ul')
     this.root.id = 'main-nav'
-    this.dashboard = this.add('Dashboard', '/dashboard')
-    this.uploads = this.add('Uploads', '/upimgs')
-    this.signout = this.add('Signout', '/signout')
+    this.add('Dashboard', '/dashboard')
+    this.add('Uploads', '/upimgs')
+    this.add('Signout', '/signout')
   }
+  
 
   add = (name, href) => {
     const menu = document.createElement('li')
-    const a = document.createElement('a')
-    a.textContent = name
-    a.href = href
-    menu.appendChild(a)
+    menu.className = 'anchor'
+    menu.textContent = name
+    menu.onclick = (e) => router(href)
     this.root.appendChild(menu)
   }
 }

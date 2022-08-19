@@ -45,15 +45,16 @@ export default class extends abstractView {
     `
     
     const container = document.getElementById('main-container')
-    container.textContent = ''
+    container.innerHTML = ''
 
-    const nav = new navBar()
     const head = document.createElement('div')
     head.id = 'main-head'
-    head.appendChild(nav.root)
     container.appendChild(head)
 
     container.innerHTML += html
+    
+    const nav = new navBar()
+    container.childNodes[0].appendChild(nav.root)
 
     const resmsg = document.getElementById('resmsg')
     const imageholder = document.getElementById('imageholder')
@@ -80,8 +81,6 @@ export default class extends abstractView {
       event.preventDefault && event.preventDefault()
       this.readImageFile(imageinputfile.files)
     }
-    const submit = document.getElementById('submit')
-    const cancel = document.getElementById('cancel')
 
     const clear = (e) => {
       this.imgData.uploads.clearData()
@@ -90,12 +89,7 @@ export default class extends abstractView {
       document.getElementById('description').value = ''
       document.getElementById('preview-upload-images').textContent = ''
     }
-      
-    cancel.onclick = (e) => {
-      clear()
-      window.location.href = '/'
-    }
-
+    
     const upload = async (e) => {
       await this.checkAuthState()
       resmsg.className = 'error'
@@ -143,7 +137,10 @@ export default class extends abstractView {
       })
     }
 
+    const submit = document.getElementById('submit')
+    const cancel = document.getElementById('cancel')
     submit.onclick = upload
+    cancel.onclick = clear
   }
 
   readImageFile = async (files) => {

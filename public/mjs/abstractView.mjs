@@ -1,5 +1,7 @@
 'use strict'
 
+import router from './router.mjs'
+
 export default class {
   constructor(params, query) {
     this.params = params
@@ -21,9 +23,9 @@ export default class {
 
   checkAuthState = async () => {
     const userAuth = this.getUserAuth()
-    if (userAuth === undefined) window.location.href = '/signin'
-    else if (userAuth.token === null) window.location.href = '/signin'
-    else if (userAuth.exprire - (Math.floor(Date.now()) / 1000) < 0) window.location.href = '/signin'
+    if (userAuth === undefined) return router('/signin')
+    else if (userAuth.token === null) return router('/signin')
+    else if (userAuth.exprire - (Math.floor(Date.now()) / 1000) < 0) return router('/signin')
     else await this.getRefreshToken(userAuth.token)
   }
 

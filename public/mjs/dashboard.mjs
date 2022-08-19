@@ -16,7 +16,7 @@ export default class extends abstractView {
     if (!this.user.token) return
 
     const container = document.getElementById('main-container')
-    container.textContent = ''
+    container.innerHTML = ''
     
     const nav = new navBar()
     const head = document.createElement('div')

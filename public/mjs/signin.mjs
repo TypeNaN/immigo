@@ -1,5 +1,6 @@
 'use strict'
 
+import router from './router.mjs'
 import abstractView from './abstractView.mjs'
 
 export default class extends abstractView {
@@ -8,10 +9,10 @@ export default class extends abstractView {
     this.setTitle('Signin')
   }
   
-  render = () => {
+  render = async () => {
     const html = `
       <div id="signin-containner">
-        <div id="signin-description">โปรดลงชื่อเช้าสู่ระบบ หรือ <span><a href="/signup" />สมัครสมาชิก</a></span></div>
+        <div id="signin-description">โปรดลงชื่อเช้าสู่ระบบ หรือ <span id="signup" class="anchor">สมัครสมาชิก</span></div>
         <div class="inputbox">
           <input type="email" name="email" id="email" required />
           <label for="email">อีเมล</label>
@@ -26,6 +27,8 @@ export default class extends abstractView {
     `
     document.getElementById('main-container').innerHTML = html
     const resmsg = document.getElementById('resmsg')
+    const linksignup = document.getElementById('signup')
+    linksignup.onclick = () => router('/signup')
 
     const signin = (e) => {
       resmsg.className = 'error'
@@ -57,7 +60,7 @@ export default class extends abstractView {
             resmsg.className = 'success'
             resmsg.textContent = 'ยืนยันเข้าระบบ'
             sessionStorage.setItem('userAuth', JSON.stringify(data))
-            return window.location.href = '/dashboard'
+            router('/dashboard')
           }
         }
         resmsg.className = 'error'

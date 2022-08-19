@@ -24,7 +24,8 @@ const getUrlquery = () => {
   return urlquery
 }
 
-const router = async () => {
+// Full SPA on client
+const router = async (path = '/', query = '') => {
   const routes = [
     { path: '/', view: dashboard },
     { path: '/dashboard', view: dashboard },
@@ -34,9 +35,9 @@ const router = async () => {
     { path: '/upimgs', view: upimgs },
     { path: '/:another', view: page404 }
   ]
-  const potentialMatches = routes.map((route) => ({ route: route, result: window.location.pathname.match(pathToRegex(route.path)) }))
-  const match = potentialMatches.find((potentialMatch) => potentialMatch.result !== null) || { route: routes[0], result: [window.location.pathname] }
-  const view = new match.route.view(getParams(match), getUrlquery())
+  const potentialMatches = routes.map((route) => ({ route: route, result: path.match(pathToRegex(route.path)) }))
+  const match = potentialMatches.find((potentialMatch) => potentialMatch.result !== null) || { route: routes[0], result: [path] }
+  const view = new match.route.view(getParams(match), query || getUrlquery())
   return await view.render()
 }
 

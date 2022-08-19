@@ -9,7 +9,7 @@ body {
 }
 
 a { color: #03A9F4; text-decoration: none; }
-a:hover { color: #69DEFF; }
+a:hover { color: #69DEFF; cursor: pointer; }
 
 #main-container {
   width: 100%;
@@ -171,9 +171,13 @@ a:hover { color: #69DEFF; }
   min-width: 100px;
   padding: 10px 20px;
   background-color: #fff;
+  color: #03A9F4;
   border-radius: 5px;
-  box-shadow: 0 20px 20px 0 rgb(0 0 0 / 20%)
+  box-shadow: 0 20px 20px 0 rgb(0 0 0 / 20%);
+  user-select: none;
 }
+
+#main-head #main-nav li:hover { color: #69DEFF; cursor: pointer; }
 
 #preview-upload-images {
   text-align: center;
@@ -195,14 +199,14 @@ a:hover { color: #69DEFF; }
 .delete-upload-image {
   position: absolute;
   cursor: pointer;
-  width: 25px;
-  height: 25px;
+  width: 20px;
+  height: 20px;
   top: 2px;
   right: 2px;
   color: #fff;
-  line-height: 25px;
+  line-height: 20px;
   background-color: #f00;
-  border-radius: 10px;
+  border-radius: 5px;
   text-align: center;
 }
 
