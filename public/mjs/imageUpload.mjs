@@ -58,9 +58,18 @@ export default class extends abstractView {
     const resmsg = document.getElementById('resmsg')
     const imageholder = document.getElementById('imageholder')
 
-    container.ondragover = () => imageholder.className = 'ondragover'
-    container.ondragend = () => imageholder.className = 'ondragend'
-    container.ondragleave = () => imageholder.className = 'ondragleave'
+    container.ondragover = () => {
+      imageholder.className = 'ondragover'
+      return false
+    }
+    container.ondragend = () => {
+      imageholder.className = 'ondragend'
+      return false
+    }
+    container.ondragleave = () => {
+      imageholder.className = 'ondragleave'
+      return false
+    }
     container.ondrop = (event) => {
       imageholder.className = 'ondrop'
       event.preventDefault && event.preventDefault()
@@ -139,10 +148,8 @@ export default class extends abstractView {
 
   readImageFile = async (files) => {
     const viewUpImages = document.getElementById('preview-upload-images')
-    const start = this.imgData.previews.length
-    const limit = files.length <= this.maxImgUpload ? files.length : this.maxImgUpload
-    for (let i = 0; i < limit; i++) {
-      if (start >= this.maxImgUpload) break
+    for (let i = 0; i < files.length; i++) {
+      if (this.imgData.previews.length >= this.maxImgUpload) break
       if (files[i].size / 1000000 > this.maxFileLarge) continue
       const mime = files[i].type.split('image/')[1]
       if (!mime) continue
