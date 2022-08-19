@@ -13,7 +13,8 @@ export default class extends abstractView {
   render = async () => {
     await this.checkAuthState()
     if (this.user.email === null) await this.checkAuthVerify(this.user.token)
-    
+    if (!this.user.token) return
+
     const container = document.getElementById('main-container')
     container.textContent = ''
     
@@ -30,16 +31,14 @@ export default class extends abstractView {
     body.appendChild(preview)
     container.appendChild(body)
 
-    if (this.user.token) {
-      fetch('/api/image/all', {
-        method: 'GET',
-        headers: { 'Authorization': 'Bearer ' + this.user.token },
-      }).then(async (res) => {
-        const data = JSON.parse(await res.text())
-        return data
-      }).then((data) => {
-        new imageAll(this, preview, data)
-      }).catch((e) => console.error(e))
-    }
+    fetch('/api/image/all', {
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer ' + this.user.token },
+    }).then(async (res) => {
+      const data = JSON.parse(await res.text())
+      return data
+    }).then((data) => {
+      new imageAll(this, preview, data)
+    }).catch((e) => console.error(e))
   }
 }

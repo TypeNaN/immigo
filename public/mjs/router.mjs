@@ -24,7 +24,7 @@ const getUrlquery = () => {
   return urlquery
 }
 
-const router = () => {
+const router = async () => {
   const routes = [
     { path: '/', view: dashboard },
     { path: '/dashboard', view: dashboard },
@@ -37,7 +37,7 @@ const router = () => {
   const potentialMatches = routes.map((route) => ({ route: route, result: window.location.pathname.match(pathToRegex(route.path)) }))
   const match = potentialMatches.find((potentialMatch) => potentialMatch.result !== null) || { route: routes[0], result: [window.location.pathname] }
   const view = new match.route.view(getParams(match), getUrlquery())
-  return view.render()
+  return await view.render()
 }
 
 export default router
