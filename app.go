@@ -264,14 +264,14 @@ func generateJWT(email string) (int64, string, error) {
 
 func getVerifyToken(authorization string) (interface{}, error) {
 	if authorization == "" {
-		return &CustomerInfo{Email: "", Kind: ""}, errors.New("403 Forbidden")
+		return &CustomerInfo{}, errors.New("403 Forbidden")
 	}
 	tokenHead := strings.Split(authorization, "Bearer ")[1]
 	token, e := jwt.ParseWithClaims(tokenHead, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return config.Secret, nil
 	})
 	if e != nil {
-		return &CustomerInfo{Email: "", Kind: ""}, e
+		return &CustomerInfo{}, e
 	}
 	return token.Claims, nil
 }
@@ -280,19 +280,11 @@ func userVerify(response http.ResponseWriter, request *http.Request) {
 	response.Header().Set("Content-Type", "application/json")
 	claims, err := getVerifyToken(request.Header.Get("Authorization"))
 	if err != nil {
-		response.WriteHeader(http.StatusInternalServerError)
+		response.WriteHeader(http.StatusForbidden)
 		response.Write([]byte(`{"message":"` + err.Error() + `"}`))
 		return
 	}
-	customs := claims.(*CustomClaims)
-	info := customs.Info
-	response.Write([]byte(`{
-		"verify":{
-			"Level":"` + customs.TokenLevel + `",
-			"Email":"` + info.Email + `",
-			"Kind":"` + info.Kind + `"
-		}
-	}`))
+	json.NewEncoder(response).Encode(&claims)
 }
 
 func getRefreshToken(response http.ResponseWriter, request *http.Request) (int64, string, error) {

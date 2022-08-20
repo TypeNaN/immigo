@@ -12,7 +12,7 @@ export default class extends abstractView {
   
   render = async () => {
     await this.checkAuthState()
-    if (this.user.email === null) await this.checkAuthVerify(this.user.token)
+    if (this.user.email === null || !await this.checkAuthVerify(this.user.token)) return
     if (!this.user.token) return
 
     const container = document.getElementById('main-container')

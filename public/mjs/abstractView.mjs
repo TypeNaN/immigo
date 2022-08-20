@@ -51,12 +51,12 @@ export default class {
       }).then(async (res) => {
         const data = JSON.parse(await res.text())
         if (res.status == 200) {
-          this.user.email = data.verify.Email
-          return
+          this.user.email = data.Info.Email
+          return true
         }
       }).catch((e) => console.error(e))
     }
-    return
+    return false
   }
 
   remove_spacails = (data) => data.replace(/[\`~!@#$%^&*\(\)+=\[\]\{\};:\'\"\\|,.<>/?]/g, '')
