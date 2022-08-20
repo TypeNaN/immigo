@@ -8,8 +8,8 @@ body {
   color: #666;
 }
 
-a { color: #03A9F4; text-decoration: none; }
-a:hover { color: #69DEFF; cursor: pointer; }
+a, .anchor { color: #03A9F4; text-decoration: none; }
+a:hover, .anchor:hover { color: #69DEFF; cursor: pointer; }
 
 #main-container {
   width: 100%;
