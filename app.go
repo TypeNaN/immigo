@@ -25,8 +25,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var dbClient *mongo.Client
-
 type ConfigDB struct {
 	Uri       string
 	User      string
@@ -83,9 +81,14 @@ type FileImage struct {
 }
 
 var config Configure
+var dbClient *mongo.Client
 
 func main() {
-	fmt.Println("Hello world!")
+
+	// ┌────────────────────────────────────────────────────────────────────────────┐
+	// │ Preparing configure                                                        |
+	// └────────────────────────────────────────────────────────────────────────────┘
+	log.Println("Load config.")
 
 	e := godotenv.Load(".env")
 	X(e)
@@ -104,6 +107,11 @@ func main() {
 	config.Db.CollUsers = os.Getenv("db_coll_users")
 	config.Db.CollImgs = os.Getenv("db_coll_images")
 
+	// ┌────────────────────────────────────────────────────────────────────────────┐
+	// │ Connect DB                                                                 |
+	// └────────────────────────────────────────────────────────────────────────────┘
+	log.Println("Connect DB.")
+
 	var dbClientOpts = options.Client().ApplyURI(config.Db.Uri).SetAuth(options.Credential{
 		AuthMechanism: "SCRAM-SHA-256",
 		AuthSource:    "admin",
@@ -117,6 +125,11 @@ func main() {
 	databases, _ := dbClient.ListDatabaseNames(context.TODO(), bson.M{})
 	fmt.Println(databases)
 
+	// ┌────────────────────────────────────────────────────────────────────────────┐
+	// │ Create router API                                                          |
+	// └────────────────────────────────────────────────────────────────────────────┘
+	log.Println("Create router API.")
+
 	router := mux.NewRouter()
 	router.HandleFunc("/api/user/signup", userSignUp).Methods("POST")
 	router.HandleFunc("/api/user/signin", userSignIn).Methods("POST")
@@ -126,9 +139,21 @@ func main() {
 	router.HandleFunc("/api/image/upload", imageUpload).Methods("POST")
 	router.HandleFunc("/api/image/edit", imageEdit).Methods("POST")
 	router.HandleFunc("/api/image/remove", imageRemove).Methods("POST")
+
+	// ┌────────────────────────────────────────────────────────────────────────────┐
+	// │ Use SPA (Single Page Application)                                          |
+	// └────────────────────────────────────────────────────────────────────────────┘
+	log.Println("Use SPA (Single Page Application)")
 	spa := SPAhandler{staticPath: "public", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(spa)
+
+	// ┌────────────────────────────────────────────────────────────────────────────┐
+	// │ Service Start                                                              |
+	// └────────────────────────────────────────────────────────────────────────────┘
+	// For production https://
+	log.Println("Service Start port : " + config.Port)
 	log.Fatal(http.ListenAndServeTLS(":"+config.Port, config.Cert, config.Key, router))
+
 }
 
 func W(w error) {
@@ -252,6 +277,8 @@ func getHash(password []byte) string {
 
 func generateJWT(email string) (int64, string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
+
+	// ว่างๆ จะเปลี่ยนไปใช้ &jwt.RegisteredClaims{}
 	exprire := &jwt.StandardClaims{ExpiresAt: time.Now().Add(time.Minute * time.Duration(config.TokenExpire)).Unix()}
 	token.Claims = &CustomClaims{exprire, "0", CustomerInfo{email, "human"}}
 	tokenString, e := token.SignedString(config.Secret)
